@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="author" content="Max Kurapov">
+    <title>d3 Test</title>
+    <meta charset="utf-8"/>
+    <style>
+        body, html {
+            height: 100%;
+        }
+
+        svg {
+            margin: 0 auto;
+            display: block;
+            position: relative;
+        }
+
+        body {
+            margin:0;
+            background-color: #F2F2F0;
+        }
+
+        .red {
+	        fill: #E62B1E;
+	    }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.8.0/d3.min.js" type="text/javascript"></script>
+</head>
+<body style="height:100%">
+        <svg width="1280" height="800">
+            <path id="TED" transform="translate(400, 20)" d="M47.205,44.159H0V.85H146.71V44.159H99.494V170.514H47.205ZM154.828.85H297.479V44.159H207.122V65.051h90.357V105.8H207.122v21.4h90.357v43.309H154.828V.85ZM306.1.85H391.9c56.352,0,76.143,41.781,76.143,84.581,0,51.968-27.418,85.083-86.3,85.083H306.1V.85ZM358.4,127.2h20.3c32.488,0,37.068-26.489,37.068-42.282,0-10.7-3.554-40.253-41.127-40.253H357.876Z" transform="translate(0 -0.85)" fill="#e62b1e"/>
+            <circle cx="475" cy="180" r="3" fill="hotpink"></circle>
+            <circle cx="625" cy="180" r="3" fill="hotpink"></circle>
+            <circle cx="775" cy="180" r="3" fill="hotpink"></circle>
+              
+        </svg>
+</body>
+    <script type="text/javascript">
+
+
+const svg = d3.select("svg"),
+width = +svg.attr("width"),
+height = +svg.attr("height");
+
+d3.csv('data-clean.csv').then(data => {
+    console.log(data);
+
+
+    const firstDate = unixToDate(data[0].film_date);
+    const lastDate = unixToDate(data[data.length - 1].film_date);
+    const timeScale = d3.scaleTime()
+            .domain([firstDate, lastDate])
+            .range([0, width]);
+            
+    // svg.append('g')
+    //         .attr('class', 'x axis')
+    //         .attr('transform', "translate(0," + height + ")")
+    //         .call(d3.axisBottom(x))
+    //         .append('text')
+    //         .text('Title');
+
+
+    const circles = svg.selectAll('circle')
+        .data(data)
+        .enter().append('circle')
+        .attr('class','red')
+        .attr('r', d => d.views/1000000)
+        .attr('cy', 600)
+        .attr('cx', d => timeScale(unixToDate(d.film_date)));
+
+
+    // // circles.attr('class', 'red');
+    // circles
+    //     .enter() // get missing placeholder elements
+    //     .append('circle') // add dom elements
+    //     .attr('r', 20) // update selection
+    //     .merge(circles)
+    //     .attr('class', 'red')
+    //     .attr('cy', 50)
+    //     .attr('cx', d => d)
+    
+})
+
+function unixToDate(timestamp) {
+    return new Date(+timestamp*1000);
+}
+
+    </script>
+</html>
