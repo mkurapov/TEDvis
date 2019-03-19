@@ -113,17 +113,17 @@ d3.csv('data-clean.csv').then(data => {
         if (d.tags.includes('technology')) {
             const techX = TEDxList[0];
             end = [techX, TEDy];
-            middle = [originX, lineY-100];
+            middle = [originX, lineY-200];
             type = 'technology';
         } else if (d.tags.includes('entertainment')) {
             const entertainmentX = TEDxList[1];
             end = [entertainmentX, TEDy];
-            middle = [originX, lineY-100];
+            middle = [originX, lineY-200];
             type = 'entertainment';
         } else if (d.tags.includes('design')) {
             const designX = TEDxList[2];
             end = [designX, TEDy];
-            middle = [originX, lineY-100];
+            middle = [originX, lineY-200];
             type = 'design';
         } else {
             return {
@@ -140,7 +140,7 @@ d3.csv('data-clean.csv').then(data => {
     console.log(dataForPaths);
 
     const lineGenerator = d3.line()
-        // .curve(d3.curveCardinal);
+        .curve(d3.curveBasis);
         
             
     // svg.append('g')
@@ -196,7 +196,7 @@ d3.csv('data-clean.csv').then(data => {
         })
         .transition()
         .ease(d3.easeSin)
-        // .delay((d, i) => 50*i)
+        .delay((d, i) => 50*i)
         .attr("stroke-dashoffset", 0);
 
     paths.on('mouseover', function (d, i) {
