@@ -21,15 +21,17 @@
             font-family: Arial, Helvetica, sans-serif;
         }
 
-        .red {
-            opacity: 0.5;
-	        fill: #E62B1E;
-	    }
         .line {
             stroke: #E62B1E;
             opacity: 0.2;
             fill:none;
             stroke-width: 2px;
+        }
+
+        circle {
+            cursor: pointer;
+            opacity: 0.2;
+            fill: #E62B1E;
         }
 
         .axis path, .axis line {
@@ -41,12 +43,29 @@
             fill: #E62B1E;
             font-size: 15px;
         }
+
+        /* .line.technology {
+            stroke: blue;
+        }
+
+        .line.design {
+            stroke: blue;
+        }
+
+        .line.entertainmennt {
+            stroke: green;
+        } */
+
+        .title {
+            text-align: center;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.8.0/d3.min.js" type="text/javascript"></script>
     <script src="https://d3js.org/d3-ease.v1.min.js"></script>
 </head>
 <body style="height:100%">
-        <svg width="1280" height="800">
+    <h1 class="title">Technology    Entertainment    Design</h1>
+        <svg width="1280" height="900">
             <path id="TED" transform="translate(400, 20)" d="M47.205,44.159H0V.85H146.71V44.159H99.494V170.514H47.205ZM154.828.85H297.479V44.159H207.122V65.051h90.357V105.8H207.122v21.4h90.357v43.309H154.828V.85ZM306.1.85H391.9c56.352,0,76.143,41.781,76.143,84.581,0,51.968-27.418,85.083-86.3,85.083H306.1V.85ZM358.4,127.2h20.3c32.488,0,37.068-26.489,37.068-42.282,0-10.7-3.554-40.253-41.127-40.253H357.876Z" transform="translate(0 -0.85)" fill="#e62b1e"/>
             <!-- <circle cx="475" cy="180" r="3" fill="hotpink"></circle>
             <circle cx="625" cy="180" r="3" fill="hotpink"></circle>
@@ -61,7 +80,7 @@ const svg = d3.select("svg"),
 width = +svg.attr("width"),
 height = +svg.attr("height");
 
-const lineY = 600;
+const lineY = height - 200;
 const TEDy = 180;
 const TEDxList = [475, 625, 775];
 
@@ -85,30 +104,40 @@ d3.csv('data-clean.csv').then(data => {
         .attr('class', 'axis')
         .attr('transform', `translate(0,${height - 150})`)
         .call(d3.axisBottom(timeScale));
-
-
             
-    const points = data.map(d => {
+    const dataForPaths = data.map(d => {
         const originX = timeScale(unixToDate(d.film_date));
         const origin = [originX, lineY];
-        let end, middle;
+        let end, middle, type;
+        
         if (d.tags.includes('technology')) {
             const techX = TEDxList[0];
             end = [techX, TEDy];
             middle = [originX, lineY-100];
+            type = 'technology';
         } else if (d.tags.includes('entertainment')) {
             const entertainmentX = TEDxList[1];
             end = [entertainmentX, TEDy];
             middle = [originX, lineY-100];
+            type = 'entertainment';
         } else if (d.tags.includes('design')) {
             const designX = TEDxList[2];
             end = [designX, TEDy];
             middle = [originX, lineY-100];
+            type = 'design';
         } else {
-            return [];
+            return {
+                type: '',
+                points: []
+            };
         }
-        return [origin, middle, end];
+        return { 
+            type: type,
+            points: [origin, middle, end] 
+        };
     });
+
+    console.log(dataForPaths);
 
     const lineGenerator = d3.line()
         // .curve(d3.curveCardinal);
@@ -126,21 +155,37 @@ d3.csv('data-clean.csv').then(data => {
         .data(data)
         .enter().append('circle')
         .attr('class','red')
+        .attr('id', (d, i) => 'circle_'+i)
         .attr('cy', lineY)
+        .attr('z-index', d => -d.views)
         .attr('cx', d => timeScale(unixToDate(d.film_date)))
         .attr('r', 0)
+
+
+     circles   
         .transition()
         // .duration(100)
         .attr('r', d => d.views/1000000)
-        .ease(d3.easeSin)
+        .ease(d3.easeSin);
+
+    circles.on('mouseover', function (d, i) {
+            console.log(i);    
+        hoverData(i);
+        }).on('mouseout', function (d, i) {
+            unhoverData(i)
+        });
+        
         // .delay((d,i) => 200*i)
 
 
     const paths = svg.selectAll('.line')
-        .data(points)
+        .data(dataForPaths)
         .enter().append('path')
-        .attr('class', 'line')
-        .attr('d', d => lineGenerator(d))
+        .attr('class', d => `line ${d.type}`)
+        .attr('id', (d, i) => 'path_'+i)
+        .attr('d', d => lineGenerator(d.points))
+
+    paths
         .attr("stroke-dasharray", function() {
             var totalLength = this.getTotalLength();
             return totalLength + " " + totalLength;
@@ -153,6 +198,12 @@ d3.csv('data-clean.csv').then(data => {
         .ease(d3.easeSin)
         // .delay((d, i) => 50*i)
         .attr("stroke-dashoffset", 0);
+
+    paths.on('mouseover', function (d, i) {
+            hoverData(i)
+        }).on('mouseout', function (d, i) {
+            unhoverData(i)
+        });
 
         // var textLabels = svg.selectAll('text')
         //         .data(data)
@@ -177,6 +228,15 @@ d3.csv('data-clean.csv').then(data => {
 
 function unixToDate(timestamp) {
     return new Date(+timestamp*1000);
+}
+
+function hoverData(index) {
+    // d3.selectAll(`#path_${index}`, `#circle_${index}`).style('opacity', '1');
+    d3.select(`#circle_${index}`).attr('fill', 'hotpink');
+}
+
+function unhoverData(index) {
+    d3.selectAll(`#path_${index}`, `#circle_${index}`).style('opacity', '0.2');
 }
 
     </script>
