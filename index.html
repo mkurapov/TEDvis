@@ -23,13 +23,20 @@
         }
 
         .letter {
-            opacity: 0.7;
+            opacity: 0;
+            animation: fade-in 0.2s forwards 1.5s;
+        }
+
+        @keyframes fade-in {
+            to {
+                opacity: 0.7;
+            }
         }
 
         .node {
             cursor: pointer;
             fill: #e62b1e;
-            opacity: 0.2;
+            opacity: 0.5;
             transition: opacity 0.3s ease-in-out;
         }
 
@@ -94,15 +101,17 @@ function determineType(tags) {
 var simulation = d3.forceSimulation()
         .force("forceX", d3.forceX().strength(.1).x(width * .5))
         .force("forceY", d3.forceY().strength(.2).y(height * .5))
-        .force("center", d3.forceCenter().x(width * .1).y(height * .5))
-        .force("charge", d3.forceManyBody().strength(-90))
+        .force("center", d3.forceCenter().x(width * .1).y(height * .5))  
+        .force("charge", d3.forceManyBody().strength(-100))
 
 const SIZE = 20;
 
-d3.csv('data-sorted.csv').then(csvData => { run(csvData)  });
+d3.csv('data-sorted.csv').then(csvData => { 
+    setTimeout( () => run(csvData), 2300)  
+});
 
 function run(csvData) {
-    let nodes = csvData.sort((a, b) => a.views < b.views).filter((d, i) => i < 400).map(v => { return { ...v, id: v.url, value: SIZE }});
+    let nodes = csvData.sort((a, b) => a.views < b.views).filter((d, i) => i < 500).map(v => { return { ...v, id: v.url, value: SIZE }});
 
     nodes.forEach(n => {
         n['category'] = determineType(n.tags);
@@ -115,7 +124,7 @@ function run(csvData) {
             return xCenter[d.category]
         }))
         .alpha(0.25)
-        .force("collide", d3.forceCollide().strength(.9))
+        .force("collide", d3.forceCollide().strength(.5))
         .on("tick", function(d){
             // console.log(d);
             node.attr('x', function(d) { return d.x; })
@@ -142,8 +151,8 @@ function run(csvData) {
       .on('mouseout', function(d) {
         d3.select(this).classed('selected', false).transition()
       .duration(350)
-      .attr("height", SIZE)
-      .attr("width", SIZE)
+      .attr("height", SIZE + d.views/500000)
+      .attr("width", SIZE + d.views/500000)
       });
     //   .call(d3.drag()
     //       .on("start", dragstarted)
