@@ -18,8 +18,9 @@ with open('data-clean.csv', newline='') as csvfile:
             else:
                 tagsDict[tag] = 0
 
-    print(tagsDict.values())
-    
+    sortedDict = {k: v for k, v in sorted(tagsDict.items(), key=lambda x: -x[1])}
+    print(sortedDict)
+
 
         
         # for tag in tags:
@@ -33,8 +34,8 @@ with open('data-clean.csv', newline='') as csvfile:
 
         
 
-# with open('data/clean.json', 'w') as fp:
-#     datadump = {
-#         "data": cleanData
-#     }
-#     json.dump(datadump, fp)
+with open('tags.json', 'w') as fp:
+    datadump = {
+        "data": sortedDict
+    }
+    json.dump(datadump, fp)
