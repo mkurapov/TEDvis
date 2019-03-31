@@ -22,36 +22,13 @@
             font-family: Arial, Helvetica, sans-serif;
         }
 
-        .line {
-            stroke: #E62B1E;
-            opacity: 0.1;
-            fill:none;
-            stroke-width: 2px;
-            transition: stroke 0.3s ease-in-out;
-            /* cursor: pointer; */
+        .node {
+            fill: #e62b1e;
+            opacity: 0.2;
         }
 
-        .letter {
-            cursor: pointer;
-            transition: fill 0.3s ease-in-out;
-        }
-
-
-        circle {
-            /* cursor: pointer; */
-            opacity: 0.1;
-            fill: #E62B1E;
-            transition: fill 0.3s ease-in-out;
-        }
-
-        .axis path, .axis line {
-            fill: none;
-            stroke: none;
-        }
-
-        .axis text {
-            fill: #E62B1E;
-            font-size: 15px;
+        .node.selected {
+            opacity: 1;
         }
 
     </style>
@@ -60,7 +37,7 @@
 </head>
 <body>
         <svg width="1280" height="900">
-            <path id="TED_T" class="letter technology" transform="translate(425, 0)" d="M32.678,30.831H0V.85H101.56V30.831H68.875V118.3h-36.2V30.831Z"  fill="#e62b1e"/>
+            <path id="TED_T" class="letter technology" transform="translate(425, 300) scale(2)" d="M32.678,30.831H0V.85H101.56V30.831H68.875V118.3h-36.2V30.831Z"  fill="#e62b1e"/>
             <path id="TED_E" class="letter entertainment" transform="translate(475,0)" d="M107.18.85h98.75V30.831H143.38V45.293h62.55V73.5H143.38V88.319h62.55V118.3H107.18V.85Z"  fill="#e62b1e"/>
             <path id="TED_D" class="letter design" transform="translate(525,0)" d="M211.9.85h59.39C310.3.85,324,29.773,324,59.4c0,35.975-18.98,58.9-59.74,58.9H211.9V.85Zm36.2,87.469h14.05c22.49,0,25.66-18.337,25.66-29.27,0-7.41-2.46-27.865-28.47-27.865h-11.6Z" transform="translate(-211.9 -0.85)" fill="#e62b1e"/>
 
@@ -82,6 +59,7 @@ const TEDy = 120;
 const TEDxList = [475, 625, 775];
 
 function determineType(tags) {
+    if (!tags) { return null }
     if (tags.includes('technology')) {
         return 'technology';
     } else if (tags.includes('entertainment')) {
@@ -93,165 +71,78 @@ function determineType(tags) {
     }
 }
 
-d3.csv('data-clean.csv').then(data => {
-    data.forEach(d => {
-        d.url = d.url.split('/')[4].trim();
-        d.type = determineType(d.tags);
-    })
+var simulation = d3.forceSimulation()
+        .force("forceX", d3.forceX().strength(.1).x(width * .5))
+        .force("forceY", d3.forceY().strength(.1).y(height * .5))
+        .force("center", d3.forceCenter().x(width * .5).y(height * .5))
+        .force("charge", d3.forceManyBody().strength(-100));
 
-    // data = data.sort((a,b) => a.film_date < b.film_date);
-    const firstDate = unixToDate(data[0].film_date);
-    const lastDate = unixToDate(data[data.length - 1].film_date);
+const SIZE = 20;
 
-    const years = data.map(d => unixToDate(d.film_date).getFullYear());
-    const distinctYears = [...new Set(years)];
-    
-    
-    const timeScale = d3.scaleTime()
-            .domain([firstDate, lastDate])
-            .range([0, width]);
+d3.csv('data-sorted.csv').then(csvData => { run(csvData)  });
 
-    // const xAxis = d3.axisBottom(timeScale)
-    //     .tickValues(distinctYears);
-
-    const letters = d3.selectAll('.letter');
-
-letters.on('mouseover', function() {
-           const type = d3.select(this).attr('class').split(' ')[1];
-            hoverLetter(type)
-        }).on('mouseout', function() {
-            const type = d3.select(this).attr('class').split(' ')[1];
-            unhoverLetter(type)
-        });
-
-
-    svg.append('g')
-        .attr('class', 'axis')
-        .attr('transform', `translate(0,${height - 150})`)
-        .call(d3.axisBottom(timeScale));
-            
-    const dataForPaths = data.map(d => {
-        const originX = timeScale(unixToDate(d.film_date));
-        const origin = [originX, lineY];
-        let end, middle, type;
-        middle = [originX, lineY-300];
-        
-        if (d.type == 'technology') {
-            const techX = TEDxList[0];
-            end = [techX, TEDy];
-        } else if (d.tags.includes('entertainment')) {
-            const entertainmentX = TEDxList[1];
-            end = [entertainmentX, TEDy];
-        } else if (d.tags.includes('design')) {
-            const designX = TEDxList[2];
-            end = [designX, TEDy];
-        } else {
-            return {
-                ...d, points: []
-            }
-            // do nothing, for now
-        }
-
-        return {
-            ...d, points: [origin, middle, end]
-        }
+function run(csvData) {
+    let nodes = csvData.filter((d, i) => i < 2).map(v => { return { ...v, id: v.url, value: SIZE }
     });
+    nodes.push({ id: 'tech', value: 100 }, { id: 'design', value: 100}, { id: 'entertainment', value: 100});
 
-    console.log(dataForPaths);
+    let links = [];
+    nodes.forEach(n => {
+        if (n.id == 'tech' || n.id == 'design' || n.id == 'entertainment') { return; }
+        let target;
+        if (determineType(n.tags) == 'technology') {
+            target = 'tech'
+        } else {
+            target = 'design';
+        }
 
+        links.push({
+            source: n.id,
+            target: target
+        });
+    })
+    console.log(links);
 
-    const lineGenerator = d3.line()
-        .curve(d3.curveBasis);
-        
-            
-    // svg.append('g')
-    //         .attr('class', 'x axis')
-    //         .attr('transform', "translate(0," + height + ")")
-    //         .call(d3.axisBottom(x))
-    //         .append('text')
-    //         .text('Title');
-
-
-    const circles = svg.selectAll('circle')
-        .data(data)
-        .enter().append('circle')
-        .attr('class', d => d.type)
-        .attr('id', (d, i) => 'circle_'+d.url)
-        .attr('cy', lineY)
-        .attr('cx', d => timeScale(unixToDate(d.film_date)))
-        .attr('r', 0)
-
-
-     circles   
-        .transition()
-        // .duration(100)
-        .attr('r', d => d.views/1000000)
-        .ease(d3.easeSin);
-
-    // circles.on('mouseover', (d) => {
-    //         hoverData(d.url)
-    //     }).on('mouseout', (d) => {
-    //         unhoverData(d.url)
-    //     });
-        
-        // .delay((d,i) => 200*i)
-
-
-    const paths = svg.selectAll('.line')
-        .data(dataForPaths)
-        .enter().append('path')
-        .attr('class', d => `line ${d.type}`)
-        .attr('id', (d, i) => 'path_'+d.url)
-        .attr('d', d => lineGenerator(d.points))
-
-    paths
-        .attr("stroke-dasharray", function() {
-            var totalLength = this.getTotalLength();
-            return totalLength + " " + totalLength;
-        })
-        .attr("stroke-dashoffset", function() {
-            var totalLength = this.getTotalLength();
-            return totalLength;
-        })
-        .transition()
-        .ease(d3.easeSin)
-        .delay((d, i) => 10*i)
-        .attr("stroke-dashoffset", 0);
-
-    paths.on('mouseover', d => {
-            hoverData(d.url)
-        }).on('mouseout', d => {
-            unhoverData(d.url)
+    simulation
+        .nodes(nodes)
+        .links(links)
+        .force("collide", d3.forceCollide().strength(.1).radius(function(d){ 2 }).iterations(4))
+        .on("tick", function(d){
+            // console.log(d);
+            node
+            .attr("transform", function(d) { console.log(d); return "translate(" + d.x - d.source.x + "," + d.y + ")"; });
         });
 
-    
-})
-
-
-
-
-
-// function hoverData(id) {
-//     d3.selectAll(`#path_${id}`, `#circle_${id}`).style('opacity', '1');
-// }
-
-// function unhoverData(id) {
-//     d3.selectAll(`#path_${id}`, `#circle_${id}`).style('opacity', '0.2');
-// }
-
-
-//THIS IS DIRTY AND SHOULD BE ONE SELECT, BUT RUNNING OUT OF TIME:
-function hoverLetter(type) {
-    d3.selectAll(`.letter.${type}`).style('fill', 'black');
-    d3.selectAll(`circle.${type}`).style('fill', 'black').style('opacity', '0.5');
-    d3.selectAll(`.line.${type}`).style('stroke', 'black').style('opacity', '0.5');
+  var node = svg
+    .selectAll("rect")
+    .data(csvData)
+    .enter().append("rect")
+    .attr("class", "node")
+      .attr("height", function(d) { return SIZE })
+      .attr("width", function(d) { return SIZE })
+      .attr("x", function(d){ return 3; })
+      .attr("y", function(d){ return 1; })
+      .on('mouseover', function(d) {
+        d3.select(this).classed('selected', true).transition()
+      .duration(350)
+      .attr("height", 100)
+      .attr("width", 180)
+      
+      })
+      .on('mouseout', function(d) {
+        d3.select(this).classed('selected', false).transition()
+      .duration(350)
+      .attr("height", SIZE)
+      .attr("width", SIZE)
+      .attr("opacity", 1)
+      
+      });
+    //   .call(d3.drag()
+    //       .on("start", dragstarted)
+    //       .on("drag", dragged)
+    //       .on("end", dragended));
 }
 
-function unhoverLetter(type) {
-    d3.selectAll(`.letter.${type}`).style('fill', '#E62B1E');
-    d3.selectAll(`circle.${type}`).style('fill', '#E62B1E').style('opacity', '0.2');
-    d3.selectAll(`.line.${type}`).style('stroke', '#E62B1E').style('opacity', '0.2');
-}
 
 function unixToDate(timestamp) {
     return new Date(+timestamp*1000);
