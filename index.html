@@ -44,40 +44,57 @@
             opacity: 1;
         }
 
-        .title {
+        .title, .tag-container, .view-count {
             opacity: 0;
             font-weight: bold;
-            font-size: 15px;
             position: absolute;
-            transition: opacity 0.3s ease-in-out;
             top:0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out 0.3s;
         }
 
-        .title.selected {
-            opacity: 1;
+        .title {
+            font-weight: bold;
+            font-size: 15px;
+            /* transition: opacity 0.3s ease-in-out; */
         }
 
         .tag-container {
             top:0;
             opacity: 0;
             position: absolute;
-            display: flex;
+            /* background: yellow; */
+            width:110px;
             flex-direction: column;
-            transition: opacity 0.3s ease-in-out;
+            display: flex;
+            
+           
         }
 
-        .tag-container.selected {
+        .selected {
             opacity: 1;
+            /* transition: opacity 0.0s ease-in-out; */
+            visibility: visible;
         }
 
         .tag {
-            /* background-color: #e62b1e; */
-            /* color: white; */
             font-weight: bold;
             text-align: right;
             padding: 4px;
             font-size: 10px;
-            margin: 0 0 2px 0;
+            margin: 0 0 1px 0;
+        }
+
+        .view-count {
+            color: white;
+            /* background: tomato; */
+            text-align: center;
+            /* height: 100px; */
+            /* width: 50px; */
+        }
+
+        .view-count div {
+            font-size: 33px;
         }
         
 
@@ -86,7 +103,7 @@
     <script src="https://d3js.org/d3-ease.v1.min.js"></script>
 </head>
 <body>
-        <svg width="1440" height="900">
+        <svg id="viz" width="1440" height="900">
             <path id="TED_T" class="letter technology" transform="translate(300, 300) scale(2)" d="M32.678,30.831H0V.85H101.56V30.831H68.875V118.3h-36.2V30.831Z"  fill="#e62b1e"/>
             <path id="TED_E" class="letter entertainment" transform="translate(400, 300) scale(2)"d="M107.18.85h98.75V30.831H143.38V45.293h62.55V73.5H143.38V88.319h62.55V118.3H107.18V.85Z"  fill="#e62b1e"/>
             <path id="TED_D" class="letter design" transform="translate(500, 300) scale(2)" d="M211.9.85h59.39C310.3.85,324,29.773,324,59.4c0,35.975-18.98,58.9-59.74,58.9H211.9V.85Zm36.2,87.469h14.05c22.49,0,25.66-18.337,25.66-29.27,0-7.41-2.46-27.865-28.47-27.865h-11.6Z" transform="translate(-211.9 -0.85)" fill="#e62b1e"/>
@@ -97,13 +114,8 @@
               
         </svg>
         <div class="title"></div>
-        <div class="tag-container">
-            <div class="tag">Design</div>
-            <div class="tag">Social media</div>
-            <div class="tag">Social dogs</div>
-            <div class="tag">Media</div>
-            <div class="tag">Dogs</div>
-        </div>
+        <div class="tag-container"></div>
+        <div class="view-count">2.4M</div>
 </body>
     <script type="text/javascript">
 
@@ -111,6 +123,12 @@
 const svg = d3.select("svg"),
 width = +svg.attr("width"),
 height = +svg.attr("height");
+
+let windowWidth = window.innerWidth;
+
+window.addEventListener('resize', e => {
+    windowWidth = window.innerWidth;
+})
 
 const lineY = height - 200;
 const TEDy = 120;
@@ -152,25 +170,27 @@ function run(csvData) {
 
     let data = csvData
         .sort((a, b) => a.views < b.views)
-        .filter((d, i) => i < 300).map(v => { return { ...v, id: v.url, tags: tagStringToArr(v.tags) }});
+        .filter((d, i) => i < 1000).map(v => { return { ...v, id: v.url, tags: tagStringToArr(v.tags) }});
     
-    let tNodes = [], eNodes = [], dNodes = [];
+    let nodes = [];
 
     data.forEach(d => {
         let obj = {}
-        if (d.tags.includes('technology')) {
-            tNodes.push({...d, category: 'technology'});
-        }
-        if (d.tags.includes('entertainment')) {
-            eNodes.push({...d, category: 'entertainment'});
-        }
-        if (d.tags.includes('design')) {
-            dNodes.push({...d, category: 'design'});
-        }
+        d.tags = d.tags.filter(t => !t.includes('TED'))
+        d.tags.forEach(t => {
+            if (t == 'technology') {
+                nodes.push({...d, category: 'technology'});
+            }
+            if (t == 'entertainment') {
+                nodes.push({...d, category: 'entertainment'});
+            }
+            if (t == 'design') {
+                nodes.push({...d, category: 'design'});
+            }
+        })
     })
 
-    let allNodes = [...tNodes, ...eNodes, ...dNodes]
-        .map((n, i) => { return { ...n, id:i} })  
+    nodes = nodes.sort((a,b) => a.views - b.views).map((n, i) => { return { ...n, id:i} })  
         
     
     // let nodes = data.map(d => {
@@ -182,7 +202,7 @@ function run(csvData) {
     // })
 
     simulation
-        .nodes(allNodes.sort((a, b) => a.views < b.views))
+        .nodes(nodes)
         .force('x', d3.forceX().x(d => {
             // console.log(d)
             return xCenter[d.category]
@@ -197,50 +217,61 @@ function run(csvData) {
 
   var node = svg
     .selectAll("rect")
-    .data(allNodes)
+    .data(nodes)
     .enter().append("rect")
     .attr("class", "node")
       .attr("height", function(d) { return SIZE + d.views/500000})
       .attr("width", function(d) { return SIZE + d.views/500000 })
       .attr("x", function(d){ return d.x; })
       .attr("y", function(d){ return d.y; })
-      .on('mouseover', function(d) {
-          console.log(Array.from(d.tags));
-        d3.select(this).classed('selected', true).transition()
-            .duration(350)
-            .attr("height", 100)
-            .attr("width", 180)
-        d3
-            .select('.title')
-            .html(d.title)
-            .attr('style', `transform:translate(${d.x}px,${d.y+20}px)`)
-            .classed('selected', true)
+      .on('mouseover', onMouseOver)
+      .on('mouseout', onMouseOut)
+        
+}
 
-        d3
-            .select('.tag-container')
-            .html(d.tags.filter((t, i) => i < 5).map(t => `<div class="tag">${t}</div>`))
-            .attr('style', `transform:translate(${d.x-100}px,${d.y+45}px)`)
-            .classed('selected', true)
-      
-      })
-      .on('mouseout', function(d) {
-        d3.select(this).classed('selected', false).transition()
-            .duration(350)
-            .attr("height", SIZE + d.views/500000)
-            .attr("width", SIZE + d.views/500000)
+function onMouseOver(d) {
+    let xOffset = 0;
+    if (windowWidth - width > 0) {
+        xOffset = (windowWidth - width)/2 - 10;
+    }
 
-        d3
-            .select('.title')
-            .classed('selected', false)
+    d3.select(this).classed('selected', true).transition()
+        .duration(350)
+        .attr("height", 100)
+        .attr("width", 180)
 
-        d3
-            .select('.tag-container')
-            .classed('selected', false)
-      });
-    //   .call(d3.drag()
-    //       .on("start", dragstarted)
-    //       .on("drag", dragged)
-    //       .on("end", dragended));
+    d3.select('.title')
+        .html(d.title)
+        .attr('style', `transform:translate(${d.x + xOffset}px,${d.y+24}px)`)
+        .classed('selected', true)
+
+    d3.select('.tag-container')
+        .html(
+            d.tags.filter((t, i) => i < 5)
+                .reduce((acc, cur) => acc+=`<span class="tag">${cur}</span>`, '')
+        )
+        .attr('style', `transform:translate(${d.x + xOffset - 115}px,${d.y+48}px)`)
+        .classed('selected', true)
+
+    d3.select('.view-count')
+        .html(
+            `<div>${(d.views/1000000).toFixed(2)}M</div>
+            <span>views<span>`
+        )
+        .attr('style', `transform:translate(${d.x + xOffset+40}px,${d.y+70}px)`)
+        .classed('selected', true)
+}
+
+function onMouseOut(d) {
+    d3.select(this)
+        .classed('selected', false)
+        .transition()
+        .duration(350)
+        .attr("height", SIZE + d.views/500000)
+        .attr("width", SIZE + d.views/500000)
+
+    d3.selectAll('.title, .tag-container, .view-count')
+        .classed('selected', false)
 }
 
 function unixToDate(timestamp) {
