@@ -20,6 +20,7 @@
                 margin:0;
                 background-color: #F2F2F0;
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                -webkit-font-smoothing: antialiased;
             }
 
             .letter {
@@ -31,18 +32,18 @@
             }
 
             .letter--technology {
-                transform: translate(611px, 0) scale(2);
-                animation: move-in 0.5s ease-in-out forwards 2.5s, fade-in 0.4s ease-in-out forwards 0.5s;
+                transform: translate(400px,  40px) scale(2);
+                animation: fade-in 0.4s ease-in-out forwards 0.5s;
             }
 
             .letter--entertainment {
-                transform: translate(400px, 0) scale(2);
-                animation: move-in 0.5s ease-in-out forwards 2.5s, fade-in 0.4s forwards 1s;
+                transform: translate(400px, 40px) scale(2);
+                animation: fade-in 0.4s forwards 1s;
             }
 
             .letter--design {
-                transform: translate(185px, 0) scale(2);
-                animation: move-in 0.5s ease-in-out forwards 2.5s, fade-in 0.4s ease-in-out forwards 1.5s;
+                transform: translate(400px, 40px) scale(2);
+                animation: fade-in 0.4s ease-in-out forwards 1.5s;
             }
 
             @keyframes move-in {
@@ -206,9 +207,9 @@
     const categories = ['technology', 'entertainment', 'design'];
 
     var simulation = d3.forceSimulation()
-            .force("forceX", d3.forceX().strength(.1).x(width * .5  ))
+            .force("forceX", d3.forceX().strength(.15).x(width * .5  ))
             .force("forceY", d3.forceY().strength(.25).y(height))
-            .force("center", d3.forceCenter().x(width * .4).y(height * .5))  
+            .force("center", d3.forceCenter().x(width * .4).y(height * .55))  
             .force("charge", d3.forceManyBody().strength(-53))
 
     const SIZE = 15;
@@ -225,7 +226,8 @@
 
         let data = csvData
             .sort((a, b) => a.views < b.views)
-            .filter((d, i) => i < 1000).map(v => { return { ...v, id: v.url, tags: tagStringToArr(v.tags) }});
+            .filter((d, i) => i < 1000)
+            .map(v => { return { ...v, id: v.url, tags: tagStringToArr(v.tags) }});
         
         let nodes = [];
 
