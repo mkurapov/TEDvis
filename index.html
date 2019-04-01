@@ -16,7 +16,6 @@
         }
 
         body {
-            padding-top:50px;
             margin:0;
             background-color: #F2F2F0;
             font-family: Helvetica, Arial, sans-serif;
@@ -242,7 +241,7 @@ function onMouseOver(d) {
 
     d3.select('.title')
         .html(d.title)
-        .attr('style', `transform:translate(${d.x + xOffset}px,${d.y+24}px)`)
+        .attr('style', `transform:translate(${d.x + xOffset}px,${d.y-20}px)`)
         .classed('selected', true)
 
     d3.select('.tag-container')
@@ -250,7 +249,7 @@ function onMouseOver(d) {
             d.tags.filter((t, i) => i < 5)
                 .reduce((acc, cur) => acc+=`<span class="tag">${cur}</span>`, '')
         )
-        .attr('style', `transform:translate(${d.x + xOffset - 115}px,${d.y+48}px)`)
+        .attr('style', `transform:translate(${d.x + xOffset - 115}px,${d.y+8}px)`)
         .classed('selected', true)
 
     d3.select('.view-count')
@@ -258,7 +257,7 @@ function onMouseOver(d) {
             `<div>${(d.views/1000000).toFixed(2)}M</div>
             <span>views<span>`
         )
-        .attr('style', `transform:translate(${d.x + xOffset+40}px,${d.y+70}px)`)
+        .attr('style', `transform:translate(${d.x + xOffset+40}px,${d.y+20}px)`)
         .classed('selected', true)
 }
 
