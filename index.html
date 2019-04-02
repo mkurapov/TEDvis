@@ -6,7 +6,7 @@
         <meta charset="utf-8"/>
         <style>
             body, html {
-                height: 100%;
+                /* height: 100%; */
             }
 
             svg {
@@ -21,6 +21,7 @@
                 background-color: #F2F2F0;
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
                 -webkit-font-smoothing: antialiased;
+                overflow-x: hidden;
             }
 
             .letter {
@@ -32,24 +33,18 @@
             }
 
             .letter--technology {
-                transform: translate(400px,  40px) scale(2);
+                transform: translate(400px,  40px) scale(1.5);
                 animation: fade-in 0.4s ease-in-out forwards 0.5s;
             }
 
             .letter--entertainment {
-                transform: translate(400px, 40px) scale(2);
+                transform: translate(400px, 40px) scale(1.5);
                 animation: fade-in 0.4s forwards 1s;
             }
 
             .letter--design {
-                transform: translate(400px, 40px) scale(2);
+                transform: translate(400px, 40px) scale(1.5);
                 animation: fade-in 0.4s ease-in-out forwards 1.5s;
-            }
-
-            @keyframes move-in {
-                to {
-                    transform: translate(400px, 0) scale(2);
-                }
             }
 
             @keyframes fade-in {
@@ -88,6 +83,8 @@
             .title {
                 font-weight: bold;
                 font-size: 15px;
+                visibility: hidden;
+
                 /* transition: opacity 0.3s ease-in-out; */
             }
 
@@ -95,6 +92,8 @@
 
             .tag-container {
                 top:0;
+                visibility: hidden;
+
                 opacity: 0;
                 position: absolute;
                 /* background: yellow; */
@@ -132,9 +131,9 @@
             .intro {
                 color: #e62b1e;
                 font-weight: 900;
-                font-size: 200px;
+                font-size: 150px;
                 position: absolute;
-                top:30vh;
+                top:35vh;
                 left:0;right:0;
                 margin:0 auto;
                 text-align: center;
@@ -163,7 +162,7 @@
         <script src="https://d3js.org/d3-ease.v1.min.js"></script>
     </head>
     <body>
-            <svg id="viz" width="1440" height="900">
+            <svg id="viz" width="1280" height="664">
                 <path id="TED_T" class="letter letter--technology"  d="M32.678,30.831H0V.85H101.56V30.831H68.875V118.3h-36.2V30.831Z"  />
                 <path id="TED_E" class="letter letter--entertainment" d="M107.18.85h98.75V30.831H143.38V45.293h62.55V73.5H143.38V88.319h62.55V118.3H107.18V.85Z"  fill="#e62b1e"/>
                 <path id="TED_D" class="letter letter--design" d="M211.9.85h59.39C310.3.85,324,29.773,324,59.4c0,35.975-18.98,58.9-59.74,58.9H211.9V.85Zm36.2,87.469h14.05c22.49,0,25.66-18.337,25.66-29.27,0-7.41-2.46-27.865-28.47-27.865h-11.6Z" fill="#e62b1e"/>                
@@ -210,7 +209,7 @@
             .force("forceX", d3.forceX().strength(.15).x(width * .5  ))
             .force("forceY", d3.forceY().strength(.25).y(height))
             .force("center", d3.forceCenter().x(width * .4).y(height * .55))  
-            .force("charge", d3.forceManyBody().strength(-53))
+            .force("charge", d3.forceManyBody().strength(-50))
 
     const SIZE = 15;
 
