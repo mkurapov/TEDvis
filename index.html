@@ -40,10 +40,6 @@
             transition: opacity 0.3s ease-in-out;
         }
 
-        .node.selected {
-            opacity: 1;
-        }
-
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.8.0/d3.min.js" type="text/javascript"></script>
     <script src="https://d3js.org/d3-ease.v1.min.js"></script>
@@ -52,12 +48,7 @@
         <svg width="1440" height="900">
             <path id="TED_T" class="letter technology" transform="translate(300, 300) scale(2)" d="M32.678,30.831H0V.85H101.56V30.831H68.875V118.3h-36.2V30.831Z"  fill="#e62b1e"/>
             <path id="TED_E" class="letter entertainment" transform="translate(400, 300) scale(2)"d="M107.18.85h98.75V30.831H143.38V45.293h62.55V73.5H143.38V88.319h62.55V118.3H107.18V.85Z"  fill="#e62b1e"/>
-            <path id="TED_D" class="letter design" transform="translate(500, 300) scale(2)" d="M211.9.85h59.39C310.3.85,324,29.773,324,59.4c0,35.975-18.98,58.9-59.74,58.9H211.9V.85Zm36.2,87.469h14.05c22.49,0,25.66-18.337,25.66-29.27,0-7.41-2.46-27.865-28.47-27.865h-11.6Z" transform="translate(-211.9 -0.85)" fill="#e62b1e"/>
-
-            <!-- <circle cx="500" cy="180" r="3" fill="hotpink"></circle> -->
-            <!-- <circle cx="625" cy="180" r="3" fill="hotpink"></circle> -->
-            <!-- <circle cx="775" cy="180" r="3" fill="hotpink"></circle> -->
-              
+            <path id="TED_D" class="letter design" transform="translate(500, 300) scale(2)" d="M211.9.85h59.39C310.3.85,324,29.773,324,59.4c0,35.975-18.98,58.9-59.74,58.9H211.9V.85Zm36.2,87.469h14.05c22.49,0,25.66-18.337,25.66-29.27,0-7.41-2.46-27.865-28.47-27.865h-11.6Z" transform="translate(-211.9 -0.85)" fill="#e62b1e"/>             
         </svg>
 </body>
     <script type="text/javascript">
@@ -71,13 +62,8 @@ const lineY = height - 200;
 const TEDy = 120;
 const TEDxList = [475, 625, 775];
 
-//USE DICT FOR X VALUES
-
-// ADD PARRALAX
-
 xCenter = {
     '':null,
-    // 'e&d':100,
     'technology':0,
     'entertainment': width/2,
     'design': width
@@ -85,8 +71,6 @@ xCenter = {
 
 function determineType(tags) {
     if (!tags) { return null }
-    // if (tags.includes('technology') && (tags.includes('entertainment'))) { return 't&e' }
-    // if (tags.includes('entertainment') && (tags.includes('design'))) { return 'e&d' }
     if (tags.includes('technology')) {
         return 'technology';
     } else if (tags.includes('entertainment')) {
@@ -122,7 +106,6 @@ function run(csvData) {
         .force('x', d3.forceX().x(d => {
             return xCenter[d.category]
         }))
-        .alpha(0.25)
         .force("collide", d3.forceCollide().strength(.5))
         .on("tick", function(d){
             node.attr('cx', function(d) { return d.x; })
