@@ -139,25 +139,7 @@ function run(csvData) {
       .attr("height", function(d) { return SIZE + d.views/500000})
       .attr("width", function(d) { return SIZE + d.views/500000 })
       .attr("x", function(d){ return d.x; })
-      .attr("y", function(d){ return d.y; })
-      .on('mouseover', function(d) {
-          console.log(d);
-        d3.select(this).classed('selected', true).transition()
-        .duration(350)
-        .attr("height", 100)
-        .attr("width", 180)
-      
-      })
-      .on('mouseout', function(d) {
-        d3.select(this).classed('selected', false).transition()
-      .duration(350)
-      .attr("height", SIZE + d.views/500000)
-      .attr("width", SIZE + d.views/500000)
-      });
-    //   .call(d3.drag()
-    //       .on("start", dragstarted)
-    //       .on("drag", dragged)
-    //       .on("end", dragended));
+      .attr("y", function(d){ return d.y; });
 }
 
 function unixToDate(timestamp) {
