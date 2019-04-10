@@ -46,10 +46,6 @@
             <path id="TED_T" class="letter technology" transform="translate(300, 300) scale(2)" d="M32.678,30.831H0V.85H101.56V30.831H68.875V118.3h-36.2V30.831Z"  fill="#e62b1e"/>
             <path id="TED_E" class="letter entertainment" transform="translate(400, 300) scale(2)"d="M107.18.85h98.75V30.831H143.38V45.293h62.55V73.5H143.38V88.319h62.55V118.3H107.18V.85Z"  fill="#e62b1e"/>
             <path id="TED_D" class="letter design" transform="translate(500, 300) scale(2)" d="M211.9.85h59.39C310.3.85,324,29.773,324,59.4c0,35.975-18.98,58.9-59.74,58.9H211.9V.85Zm36.2,87.469h14.05c22.49,0,25.66-18.337,25.66-29.27,0-7.41-2.46-27.865-28.47-27.865h-11.6Z" transform="translate(-211.9 -0.85)" fill="#e62b1e"/>
-
-            <!-- <circle cx="500" cy="180" r="3" fill="hotpink"></circle> -->
-            <!-- <circle cx="625" cy="180" r="3" fill="hotpink"></circle> -->
-            <!-- <circle cx="775" cy="180" r="3" fill="hotpink"></circle> -->
               
         </svg>
 </body>
@@ -64,13 +60,8 @@ const lineY = height - 200;
 const TEDy = 120;
 const TEDxList = [475, 625, 775];
 
-//USE DICT FOR X VALUES
-
-// ADD PARRALAX
-
 xCenter = {
     '':null,
-    // 'e&d':100,
     'technology':0,
     'entertainment': width/2,
     'design': width
@@ -78,8 +69,6 @@ xCenter = {
 
 function determineType(tags) {
     if (!tags) { return null }
-    // if (tags.includes('technology') && (tags.includes('entertainment'))) { return 't&e' }
-    // if (tags.includes('entertainment') && (tags.includes('design'))) { return 'e&d' }
     if (tags.includes('technology')) {
         return 'technology';
     } else if (tags.includes('entertainment')) {
@@ -92,10 +81,10 @@ function determineType(tags) {
 }
 
 var simulation = d3.forceSimulation()
-        .force("forceX", d3.forceX().strength(.1).x(width * .5))
+        .force("forceX", d3.forceX().strength(.2).x(width * .5))
         .force("forceY", d3.forceY().strength(.2).y(height * .5))
-        .force("center", d3.forceCenter().x(width * .1).y(height * .5))
-        .force("charge", d3.forceManyBody().strength(-90))
+        .force("center", d3.forceCenter().x(width * .5).y(height * .5))
+        .force("charge", d3.forceManyBody().strength(-100))
 
 const SIZE = 20;
 
@@ -110,45 +99,22 @@ function run(csvData) {
 
     simulation
         .nodes(nodes.sort((a, b) => a.views - b.views))
-        .force('x', d3.forceX().x(d => {
-            // console.log()
-            return xCenter[d.category]
-        }))
-        .alpha(0.25)
-        .force("collide", d3.forceCollide().strength(.9))
+        .alpha(0.1)
+        .force("collide", d3.forceCollide().strength(.4))
         .on("tick", function(d){
             // console.log(d);
-            node.attr('x', function(d) { return d.x; })
-                .attr('y', function(d) { return d.y; });
+            node.attr('cx', function(d) { return d.x; })
+                .attr('cy', function(d) { return d.y; });
         });
 
   var node = svg
-    .selectAll("rect")
+    .selectAll("circle")
     .data(nodes)
-    .enter().append("rect")
+    .enter().append("circle")
     .attr("class", "node")
-      .attr("height", function(d) { return SIZE + d.views/500000})
-      .attr("width", function(d) { return SIZE + d.views/500000 })
-      .attr("x", function(d){ return d.x; })
-      .attr("y", function(d){ return d.y; })
-      .on('mouseover', function(d) {
-          console.log(d);
-        d3.select(this).classed('selected', true).transition()
-        .duration(350)
-        .attr("height", 100)
-        .attr("width", 180)
-      
-      })
-      .on('mouseout', function(d) {
-        d3.select(this).classed('selected', false).transition()
-      .duration(350)
-      .attr("height", SIZE)
-      .attr("width", SIZE)
-      });
-    //   .call(d3.drag()
-    //       .on("start", dragstarted)
-    //       .on("drag", dragged)
-    //       .on("end", dragended));
+      .attr("r", function(d) { return SIZE + d.views/1000000})
+      .attr("cx", function(d){ return d.x; })
+      .attr("cy", function(d){ return d.y; });
 }
 
 function unixToDate(timestamp) {
