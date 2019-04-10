@@ -99,10 +99,10 @@ function run(csvData) {
 
     simulation
         .nodes(nodes.sort((a, b) => a.views - b.views))
-        .alpha(0.1)
-        .force("collide", d3.forceCollide().strength(.4))
+        .velocityDecay(.20)
+        .alpha(.25)
+        .force("collide", d3.forceCollide().strength(.9))
         .on("tick", function(d){
-            // console.log(d);
             node.attr('cx', function(d) { return d.x; })
                 .attr('cy', function(d) { return d.y; });
         });
